@@ -28,6 +28,11 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Locale
 
+import android.app.Activity
+import com.example.data.firebase.FirestoreSyncService
+import com.example.data.firebase.SyncStatus
+import com.google.firebase.auth.FirebaseUser
+
 enum class AppScreen(val banglaTitle: String) {
     DASHBOARD("ড্যাশবোর্ড"),
     POS("পিওএস বিক্রি"),
@@ -41,6 +46,10 @@ enum class AppScreen(val banglaTitle: String) {
 class PharmacyViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = PharmacyRepository(application)
+    val syncService = FirestoreSyncService(application)
+
+    val currentUser: StateFlow<FirebaseUser?> = syncService.currentUser
+    val syncStatus: StateFlow<SyncStatus> = syncService.syncStatus
 
     // Current navigation tab
     private val _currentScreen = MutableStateFlow(AppScreen.DASHBOARD)
@@ -363,6 +372,7 @@ class PharmacyViewModel(application: Application) : AndroidViewModel(application
         )
 
         repository.recordSale(saleRecord)
+        syncService.uploadSaleToCloud(activePharmacy.value.id, saleRecord)
 
         // Show thermal receipt
         _lastCompletedSale.value = saleRecord
@@ -382,13 +392,15 @@ class PharmacyViewModel(application: Application) : AndroidViewModel(application
 
     // Medicine Inventory Actions
     fun saveMedicine(medicine: Medicine) {
+        val target = medicine.copy(pharmacyId = activePharmacy.value.id)
         if (medicines.value.any { it.id == medicine.id }) {
-            repository.updateMedicine(medicine.copy(pharmacyId = activePharmacy.value.id))
+            repository.updateMedicine(target)
             emitAlert("✅ ওষুধ তথ্য আপডেট করা হয়েছে")
         } else {
-            repository.addMedicine(medicine.copy(pharmacyId = activePharmacy.value.id))
+            repository.addMedicine(target)
             emitAlert("✅ নতুন ওষুধ যুক্ত করা হয়েছে")
         }
+        syncService.uploadMedicineToCloud(activePharmacy.value.id, target)
     }
 
     fun deleteMedicine(id: String) {
@@ -536,6 +548,49 @@ class PharmacyViewModel(application: Application) : AndroidViewModel(application
             emitAlert("❌ ভুল JSON ফরম্যাট! রিস্টোর ব্যর্থ হয়েছে।")
         }
         return success
+    }
+
+    fun handleScannedBarcode(barcode: String) {
+        val trimmed = barcode.trim()
+        val med = medicines.value.find {
+            it.barcode.equals(trimmed, ignoreCase = true) ||
+            it.barcode.contains(trimmed) ||
+            it.id == trimmed
+        }
+        if (med != null) {
+            if (med.isExpired()) {
+                emitAlert("⚠️ স্ক্যানকৃত ওষুধ '${med.name}'-এর মেয়াদ শেষ (${med.expiryDate})! বিক্রি সম্পূর্ণ নিষিদ্ধ।")
+            } else if (med.isStockOut()) {
+                emitAlert("⚠️ স্ক্যানকৃত ওষুধ '${med.name}'-এর স্টক ০ পিস! কার্টে যোগ করা যাবে না।")
+            } else {
+                addToCart(med)
+                emitAlert("✅ স্ক্যান সফল: '${med.name}' কার্টে যুক্ত হয়েছে!")
+            }
+        } else {
+            setPosSearchQuery(trimmed)
+            emitAlert("🔍 বারকোড '$trimmed' মিল পাওয়া যায়নি। সার্চ বক্সে ফিল্টার করা হলো।")
+        }
+    }
+
+    fun signInWithGoogle(activity: Activity) {
+        syncService.signInWithGoogle(
+            activity = activity,
+            onSuccess = {
+                emitAlert("✅ গুগল ক্লাউড সিঙ্ক সক্রিয় হয়েছে!")
+                syncService.startListeningToPharmacyCloud(activePharmacy.value.id) { cloudMeds ->
+                    cloudMeds.forEach { repository.updateMedicine(it) }
+                }
+            },
+            onError = { err ->
+                emitAlert("❌ সাইন-ইন ত্রুটি: $err")
+            }
+        )
+    }
+
+    fun signOut() {
+        syncService.signOut {
+            emitAlert("গুগল অ্যাকাউন্ট থেকে সাইন-আউট করা হয়েছে")
+        }
     }
 
     private fun emitAlert(message: String) {

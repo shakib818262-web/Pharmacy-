@@ -82,6 +82,12 @@ import com.example.ui.theme.TealSecondary
 import com.example.util.BengaliUtils
 import kotlinx.coroutines.flow.collectLatest
 
+import androidx.compose.runtime.DisposableEffect
+import com.example.ui.screens.AuthScreen
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
+
 class MainActivity : ComponentActivity() {
 
     private val viewModel: PharmacyViewModel by viewModels()
@@ -91,7 +97,31 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MyApplicationTheme {
-                PharmacyKhataApp(viewModel = viewModel)
+                val auth = Firebase.auth
+                var currentUser by remember { mutableStateOf(auth.currentUser) }
+
+                DisposableEffect(Unit) {
+                    val listener = FirebaseAuth.AuthStateListener { fAuth ->
+                        currentUser = fAuth.currentUser
+                    }
+                    auth.addAuthStateListener(listener)
+                    onDispose {
+                        auth.removeAuthStateListener(listener)
+                    }
+                }
+
+                if (currentUser == null) {
+                    AuthScreen(
+                        onAuthSuccess = {
+                            currentUser = Firebase.auth.currentUser
+                        }
+                    )
+                } else {
+                    PharmacyKhataApp(
+                        viewModel = viewModel,
+                        userEmail = currentUser?.email ?: ""
+                    )
+                }
             }
         }
     }
@@ -105,7 +135,10 @@ data class NavItem(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PharmacyKhataApp(viewModel: PharmacyViewModel) {
+fun PharmacyKhataApp(
+    viewModel: PharmacyViewModel,
+    userEmail: String = ""
+) {
     val currentScreen by viewModel.currentScreen.collectAsState()
     val activePharmacy by viewModel.activePharmacy.collectAsState()
     val pharmacies by viewModel.pharmacies.collectAsState()

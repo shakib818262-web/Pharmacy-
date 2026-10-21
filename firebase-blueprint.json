@@ -1,0 +1,192 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Represents the authenticated pharmacist or pharmacy owner account.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The unique Firebase Auth UID." },
+        "email": { "type": "string", "description": "The user email address." },
+        "displayName": { "type": "string", "description": "The name of the user." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp of account creation." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp of last update." }
+      },
+      "required": ["userId", "email", "createdAt"]
+    },
+    "Pharmacy": {
+      "title": "Pharmacy",
+      "description": "Pharmacy shop or branch profile configuration.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Pharmacy branch ID." },
+        "name": { "type": "string", "description": "Name of the pharmacy." },
+        "address": { "type": "string", "description": "Address or market location." },
+        "drugLicense": { "type": "string", "description": "Government Drug License Number." },
+        "phone": { "type": "string", "description": "Contact phone number." },
+        "useBengaliDigits": { "type": "boolean", "description": "Whether to format numbers with Bengali digits." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp." }
+      },
+      "required": ["id", "name", "createdAt"]
+    },
+    "Medicine": {
+      "title": "Medicine",
+      "description": "Medicine stock and batch item in inventory.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Medicine item ID." },
+        "name": { "type": "string", "description": "Brand/Commercial name." },
+        "genericName": { "type": "string", "description": "Generic name of formula." },
+        "company": { "type": "string", "description": "Pharmaceutical manufacturer company." },
+        "category": { "type": "string", "description": "Medicine category (Tablet, Syrup, etc.)." },
+        "rackLocation": { "type": "string", "description": "Physical shelf or rack number." },
+        "stripPrice": { "type": "number", "description": "Selling price per strip/box." },
+        "piecePrice": { "type": "number", "description": "Selling price per piece/unit." },
+        "piecesPerStrip": { "type": "integer", "description": "Number of pieces per strip/box." },
+        "buyPricePerStrip": { "type": "number", "description": "Purchase cost per strip." },
+        "currentStockPieces": { "type": "integer", "description": "Total stock available in pieces." },
+        "minStockAlertPieces": { "type": "integer", "description": "Threshold for low stock warning alert." },
+        "batchNumber": { "type": "string", "description": "Batch number." },
+        "expiryDate": { "type": "string", "description": "Expiry date in YYYY-MM-DD format." },
+        "barcode": { "type": "string", "description": "Barcode or QR code identifier." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp." }
+      },
+      "required": ["id", "name", "piecePrice", "currentStockPieces", "createdAt"]
+    },
+    "Sale": {
+      "title": "Sale",
+      "description": "Completed point of sale invoice and transaction.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Sale transaction ID." },
+        "invoiceNumber": { "type": "string", "description": "Human-readable invoice sequence number." },
+        "customerId": { "type": "string", "description": "Optional customer ID for due tracking." },
+        "customerName": { "type": "string", "description": "Customer name." },
+        "customerPhone": { "type": "string", "description": "Customer phone number." },
+        "subtotal": { "type": "number", "description": "Cart subtotal." },
+        "discount": { "type": "number", "description": "Discount applied." },
+        "total": { "type": "number", "description": "Net total amount payable." },
+        "paidAmount": { "type": "number", "description": "Amount paid by customer." },
+        "dueAmount": { "type": "number", "description": "Remaining due balance." },
+        "paymentMethod": { "type": "string", "description": "Payment mode (CASH, BKASH, NAGAD, CARD, DUE)." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp." }
+      },
+      "required": ["id", "invoiceNumber", "total", "paidAmount", "createdAt"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "Customer ledger profile for credit sales and dues.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Customer ID." },
+        "name": { "type": "string", "description": "Customer name." },
+        "phone": { "type": "string", "description": "Contact telephone number." },
+        "address": { "type": "string", "description": "Customer address." },
+        "totalDue": { "type": "number", "description": "Total outstanding debt/due balance." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp." }
+      },
+      "required": ["id", "name", "totalDue", "createdAt"]
+    },
+    "Supplier": {
+      "title": "Supplier",
+      "description": "Medicine distributor or supplier ledger profile.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Supplier ID." },
+        "name": { "type": "string", "description": "Supplier contact or company name." },
+        "phone": { "type": "string", "description": "Contact telephone number." },
+        "company": { "type": "string", "description": "Pharmaceutical distribution company name." },
+        "totalPayable": { "type": "number", "description": "Total outstanding amount owed to supplier." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp." }
+      },
+      "required": ["id", "name", "totalPayable", "createdAt"]
+    },
+    "Purchase": {
+      "title": "Purchase",
+      "description": "Stock purchase from pharmaceutical supplier.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Purchase transaction ID." },
+        "invoiceNumber": { "type": "string", "description": "Supplier invoice/challan number." },
+        "supplierId": { "type": "string", "description": "Supplier ID reference." },
+        "supplierName": { "type": "string", "description": "Supplier name." },
+        "totalAmount": { "type": "number", "description": "Total invoice purchase amount." },
+        "paidAmount": { "type": "number", "description": "Amount paid to supplier." },
+        "dueAmount": { "type": "number", "description": "Remaining payable balance." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp." }
+      },
+      "required": ["id", "supplierId", "totalAmount", "paidAmount", "createdAt"]
+    },
+    "Expense": {
+      "title": "Expense",
+      "description": "Daily pharmacy shop operating expense.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Expense entry ID." },
+        "category": { "type": "string", "description": "Expense category (Rent, Electricity, Salary, etc.)." },
+        "amount": { "type": "number", "description": "Expense amount in Taka." },
+        "note": { "type": "string", "description": "Details or notes on expense." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp." }
+      },
+      "required": ["id", "category", "amount", "createdAt"]
+    },
+    "CashTransaction": {
+      "title": "CashTransaction",
+      "description": "Cash register drawer in or out entry.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Transaction ID." },
+        "type": { "type": "string", "description": "Transaction type (IN or OUT)." },
+        "amount": { "type": "number", "description": "Cash amount in Taka." },
+        "reason": { "type": "string", "description": "Purpose of cash deposit or withdrawal." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp." }
+      },
+      "required": ["id", "type", "amount", "reason", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Stores user profile and account information."
+    },
+    "/users/{userId}/pharmacies/{pharmacyId}": {
+      "schema": "Pharmacy",
+      "description": "Stores pharmacy branch profile details."
+    },
+    "/users/{userId}/medicines/{medicineId}": {
+      "schema": "Medicine",
+      "description": "Stores medicine stock, batches, barcodes, and pricing."
+    },
+    "/users/{userId}/sales/{saleId}": {
+      "schema": "Sale",
+      "description": "Stores POS sales transactions and receipts."
+    },
+    "/users/{userId}/customers/{customerId}": {
+      "schema": "Customer",
+      "description": "Stores customer due ledger accounts."
+    },
+    "/users/{userId}/suppliers/{supplierId}": {
+      "schema": "Supplier",
+      "description": "Stores medicine distributor/supplier ledger accounts."
+    },
+    "/users/{userId}/purchases/{purchaseId}": {
+      "schema": "Purchase",
+      "description": "Stores medicine purchase invoices."
+    },
+    "/users/{userId}/expenses/{expenseId}": {
+      "schema": "Expense",
+      "description": "Stores pharmacy daily shop expenses."
+    },
+    "/users/{userId}/cash_transactions/{transactionId}": {
+      "schema": "CashTransaction",
+      "description": "Stores cash drawer deposits and withdrawals."
+    }
+  }
+}
