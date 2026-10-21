@@ -1,0 +1,6 @@
+{
+  "name": "ফার্মেসি খাতা",
+  "description": "সম্পূর্ণ আধুনিক বাংলা ফার্মেসি ম্যানেজমেন্ট ও পিওএস (POS) অ্যাপ - ওষুধ স্টক, বিক্রি, বাকি, ক্রয় ও লাভ-ক্ষতির হিসাব।",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
