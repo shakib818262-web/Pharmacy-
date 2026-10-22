@@ -22,11 +22,49 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Build Debug APK with Gradle
-        run: gradle assembleDebug --stacktrace
+      - name: Ensure mock google-services.json exists if missing
+        run: |
+          if [ ! -f app/google-services.json ]; then
+            echo "Creating fallback mock google-services.json..."
+            cat << 'EOF' > app/google-services.json
+          {
+            "project_info": {
+              "project_number": "668271556940",
+              "project_id": "gen-lang-client-0964514947",
+              "storage_bucket": "gen-lang-client-0964514947.firebasestorage.app"
+            },
+            "client": [
+              {
+                "client_info": {
+                  "mobilesdk_app_id": "1:668271556940:android:3417ef32864e9fe13977e9",
+                  "android_client_info": {
+                    "package_name": "com.aistudio.pharmacykhata.bngpos"
+                  }
+                },
+                "oauth_client": [],
+                "api_key": [
+                  {
+                    "current_key": "AIzaSyMockKeyForBuild1234567890"
+                  }
+                ],
+                "services": {}
+              }
+            ],
+            "configuration_version": "1"
+          }
+          EOF
+          fi
 
-      - name: Upload Debug APK
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build Debug APK with Gradle Wrapper
+        run: ./gradlew assembleDebug --stacktrace --no-daemon
+
+      - name: Upload Debug APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: pharmacy-khata-app-debug
           path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30
